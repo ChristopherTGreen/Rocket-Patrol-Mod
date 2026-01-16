@@ -51,7 +51,7 @@ class Play extends Phaser.Scene {
         // GAME OVER flag
         this.gameOver = false
 
-        // 60-second play clock
+        // play clock (either 45-60)
         scoreConfig.fixedWidth = 0
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
@@ -84,17 +84,21 @@ class Play extends Phaser.Scene {
             this.p1Rocket.reset()
             this.shipExplode(this.ship03)
         }
-        if(this.checkCollision(this.p1Rocket, this.ship02)) {
+        else if(this.checkCollision(this.p1Rocket, this.ship02)) {
             this.p1Rocket.reset()
             this.shipExplode(this.ship02)
         }
-        if(this.checkCollision(this.p1Rocket, this.ship01)) {
+        else if(this.checkCollision(this.p1Rocket, this.ship01)) {
             this.p1Rocket.reset()
             this.shipExplode(this.ship01)
         }
-        if(this.checkCollision(this.p1Rocket, this.ship04)) {
+        else if(this.checkCollision(this.p1Rocket, this.ship04)) {
             this.p1Rocket.reset()
             this.shipExplode(this.ship04)
+        }
+        else if(this.p1Rocket.y < borderUISize * 3 + borderPadding+1) {
+            // if miss, will deduct time
+            this.clock.delay -= 1000
         }
     }
 
@@ -118,8 +122,9 @@ class Play extends Phaser.Scene {
             ship.alpha = 1                      // make ship visible again
             boom.destroy()                      // remove explosion sprite
         })
-        // score add and text update
+        // score add, time add, and text update
         this.p1Score += ship.points
+        this.clock.delay += 1000
         this.scoreLeft.text = this.p1Score
         this.sound.play('sfx-explosion')
     }
