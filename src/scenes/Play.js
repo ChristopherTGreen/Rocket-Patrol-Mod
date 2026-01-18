@@ -30,8 +30,13 @@ class Play extends Phaser.Scene {
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
         
-        // initialize score
-        this.p1Score = 0
+        // initialize score (or given prev score for two player mode)
+        if (game.settings.gamePrevScore < 0) {
+            this.p1Score = 0
+        }
+        else {
+            this.p1Score = game.settings.gamePrevScore
+        }
         
         // display score
         let scoreConfig = {
@@ -47,6 +52,12 @@ class Play extends Phaser.Scene {
             fixedWidth: 100
         }
         this.scoreLeft = this.add.text(borderUISize + borderPadding, borderUISize + borderPadding*2, this.p1Score, scoreConfig)
+
+        // display second player's score bar (if two player mode selected)
+        if (game.settings.gameTwoPlayers) {
+            this.p2Score = 0
+            this.scoreLeftTwo = this.add.text(game.config.width - borderUISize*3 - borderPadding*5, borderUISize + borderPadding*2, this.p2Score, scoreConfig)
+        }
         
         // GAME OVER flag
         this.gameOver = false
@@ -55,17 +66,47 @@ class Play extends Phaser.Scene {
         scoreConfig.fixedWidth = 0
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
-            this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5)
+            if (game.settings.gamePrevScore >= 0) {
+                this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5)
+            }
+            else {
+                this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) for Player Two', scoreConfig).setOrigin(0.5)
+            }
             this.gameOver = true
         }, null, this)
+
+        // display time
+        let timeConfig = {
+            fontFamily: 'Courier', 
+            fontSize: '28px',
+            backgroundColor: '#F3B141',
+            color: '#843605',
+            align: 'center',
+            padding: {
+                top: 5,
+                bottom: 5,
+            },
+            fixedWidth: 100
+        }
+        this.timeLeft = this.add.text(game.config.width/2 - borderPadding - borderUISize, borderUISize + borderPadding*2, Math.floor(this.time/100), timeConfig)
     }
 
     update() {
         // check key input for restart
-        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyRESET)) {
-            this.scene.restart()
+        if (this.gameOver && Phaser.Input.Keyboard.JustDown(keyRESET)) {
+            if(game.settings.gamePrevScore >= 0 || !game.settings.gameTwoPlayers) {
+                game.settings.gamePrevScore = -1
+                console.log(game.settings.gamePrevScore)
+                this.scene.restart()
+            }
+            else if(game.settings.gamePrevScore < 0) {
+                console.log(game.settings.gamePrevScore)
+                console.log(this.p1Score)
+                game.settings.gamePrevScore = this.p1Score
+                this.scene.restart()
+            }
         }
-        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT) && game.settings.gamePrevScore < 0) {
             this.scene.start("menuScene")
         }
 
@@ -77,6 +118,8 @@ class Play extends Phaser.Scene {
             this.ship02.update()
             this.ship03.update()
             this.ship04.update()            // update fast spacership
+            // update timer text
+            this.timeLeft.text = Math.ceil(this.clock.delay/1000 - this.clock.elapsed/1000)
         }
 
         // check collisions
@@ -122,10 +165,16 @@ class Play extends Phaser.Scene {
             ship.alpha = 1                      // make ship visible again
             boom.destroy()                      // remove explosion sprite
         })
-        // score add, time add, and text update
-        this.p1Score += ship.points
+        // score add, time add, and text update (dependent on player)
+        if (game.settings.gamePrevScore < 0) {
+            this.p1Score += ship.points
+            this.scoreLeft.text = this.p1Score
+        }
+        else {
+            this.p2Score += ship.points
+            this.scoreLeftTwo.text = this.p2Score
+        }
         this.clock.delay += 1000
-        this.scoreLeft.text = this.p1Score
         this.sound.play('sfx-explosion')
     }
 }

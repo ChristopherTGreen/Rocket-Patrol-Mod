@@ -25,6 +25,8 @@ class Menu extends Phaser.Scene {
     }
 
     create() {
+        // initalize bool for two player mode
+        this.gamePlayerMode = false
         // animation configuration
         this.anims.create({
             key: 'explode',
@@ -53,11 +55,13 @@ class Menu extends Phaser.Scene {
         this.add.text(game.config.width/2, game.config.height/2, 'Use ←→ arrows to move & (F) to fire', menuConfig).setOrigin(0.5)
         menuConfig.backgroundColor = '#00FF00'
         menuConfig.color = '#000'
-        this.add.text(game.config.width/2, game.config.height/2 - borderUISize - borderPadding, 'Press ← for Novice or → for Expert', menuConfig).setOrigin(0.5)
+        this.add.text(game.config.width/2, game.config.height/2 + borderUISize + borderPadding, 'Press ← for Novice or → for Expert', menuConfig).setOrigin(0.5)
+        this.playerDisplay = this.add.text(game.config.width/2, game.config.height/2 + borderUISize*2 + borderPadding*2, 'Press F to toggle Two Players', menuConfig).setOrigin(0.5)
     
         // define keys
         keyLEFT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.LEFT)
         keyRIGHT = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.RIGHT)
+        keyFIRE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F)
     }
 
     update() {
@@ -65,7 +69,10 @@ class Menu extends Phaser.Scene {
             // easy mode
             game.settings = {
                 spaceshipSpeed: 3,
-                gameTimer: 60000
+                gameTimer: 60000,
+                // settings for multiplayer, and for another repeat run
+                gameTwoPlayers: this.gamePlayerMode,
+                gamePrevScore: -1
             }
             this.sound.play('sfx-select')
             this.scene.start('playScene')
@@ -74,10 +81,24 @@ class Menu extends Phaser.Scene {
             // hard mode
             game.settings = {
                 spaceshipSpeed: 4,
-                gameTimer: 45000
+                gameTimer: 45000,
+                // settings for multiplayer, and for another repeat run
+                gameTwoPlayers: this.gamePlayerMode,
+                gamePrevScore: -1
             }
             this.sound.play('sfx-select')
             this.scene.start('playScene')
+        }
+        if (Phaser.Input.Keyboard.JustDown(keyFIRE)) {
+            // toggle on/off two player mode
+            if (this.gamePlayerMode) {
+                this.gamePlayerMode = false
+                this.playerDisplay.text = 'Press F to toggle Two Players'
+            }
+            else if (!this.gamePlayerMode) {
+                this.gamePlayerMode = true
+                this.playerDisplay.text = 'Press F to toggle One Player'
+            }
         }
     }
 }
