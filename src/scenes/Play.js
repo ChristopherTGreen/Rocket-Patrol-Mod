@@ -3,6 +3,18 @@ class Play extends Phaser.Scene {
         super('playScene')
     }
 
+    preload() {
+        // initates a function to fire if mouse is clicked
+        if (this.input.activePointer) {
+            console.log(this.input.activePointer.x, this.input.activePointer.y);
+        }
+        this.input.on('pointerdown', (pointer) => {
+            if (pointer.leftButtonDown()) {
+                this.p1Rocket.fire()   // calls fire function
+            }
+        });
+    }
+
     create() {
         // place tile sprite
         this.starfield = this.add.tileSprite(0, 0, 640, 480, 'starfield').setOrigin(0, 0)
@@ -114,6 +126,7 @@ class Play extends Phaser.Scene {
 
         if(!this.gameOver) {
             this.p1Rocket.update()          // update rocket sprite
+            this.movementOnMouse()          // update rocket on mouse movement
             this.ship01.update()            // update spaceships (3x)
             this.ship02.update()
             this.ship03.update()
@@ -176,5 +189,19 @@ class Play extends Phaser.Scene {
         }
         this.clock.delay += 1000
         this.sound.play('sfx-explosion')
+    }
+
+    // movement based on mouse if present in window
+    movementOnMouse() {
+        if(this.input.activePointer.x < game.config.width && this.input.activePointer.x > 0) {
+            if(this.input.activePointer.y < game.config.height && this.input.activePointer.y > 0) {
+                if(this.input.activePointer.x < this.p1Rocket.x) {
+                    this.p1Rocket.moveLeft()
+                }
+                else if(this.input.activePointer.x > this.p1Rocket.x) {
+                    this.p1Rocket.moveRight()
+                }
+            }
+        }
     }
 }
