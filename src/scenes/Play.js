@@ -193,7 +193,7 @@ class Play extends Phaser.Scene {
 
     // movement based on mouse if present in window
     movementOnMouse() {
-        if(this.input.activePointer.x < game.config.width && this.input.activePointer.x > 0) {
+        if(this.input.activePointer.x < game.config.width - borderPadding - borderUISize && this.input.activePointer.x - borderPadding - borderUISize > 0) {
             if(this.input.activePointer.y < game.config.height && this.input.activePointer.y > 0) {
                 if(this.input.activePointer.x < this.p1Rocket.x) {
                     this.p1Rocket.moveLeft()
