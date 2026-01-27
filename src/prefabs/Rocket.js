@@ -22,14 +22,10 @@ class Rocket extends Phaser.GameObjects.Sprite {
                 this.moveRight()
             }
         }
-        // fire button
-        if((Phaser.Input.Keyboard.JustDown(keyFIRE)) && !this.isFiring) {
-            this.fire()
-        }
-        // if fired, move up
-        if(this.isFiring && this.y >= borderUISize * 3 + borderPadding) {
-            this.y -= this.moveSpeed
-        }
+
+        //function call to fire(), acts the same way as before but with added functionality with mouse
+        this.fire()
+        
         // reset on miss
         if(this.y <= borderUISize * 3 + borderPadding) {
             this.isFiring = false
@@ -44,9 +40,21 @@ class Rocket extends Phaser.GameObjects.Sprite {
     }
 
     // fires rocket
-    fire() {
-        this.isFiring = true
-        this.sfxShot.play()
+    fire(mouseFire = false) {
+        // fire button
+        if((Phaser.Input.Keyboard.JustDown(keyFIRE)) && !this.isFiring) {
+            this.isFiring = true
+            this.sfxShot.play()
+        }
+        else if (mouseFire == true && !this.isFiring){
+            this.isFiring = true
+            this.sfxShot.play()
+        }
+        // if fired, move up
+        if(this.isFiring && this.y >= borderUISize * 3 + borderPadding) {
+            this.y -= this.moveSpeed
+        }
+        
     }
 
     // movement left

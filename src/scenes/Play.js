@@ -9,8 +9,8 @@ class Play extends Phaser.Scene {
             console.log(this.input.activePointer.x, this.input.activePointer.y);
         }
         this.input.on('pointerdown', (pointer) => {
-            if (pointer.leftButtonDown()) {
-                this.p1Rocket.fire()   // calls fire function
+            if (pointer.leftButtonDown() && !this.gameOver) {
+                this.p1Rocket.fire(true)   // calls fire function
             }
         });
     }
@@ -79,7 +79,7 @@ class Play extends Phaser.Scene {
         scoreConfig.fixedWidth = 0
         this.clock = this.time.delayedCall(game.settings.gameTimer, () => {
             this.add.text(game.config.width/2, game.config.height/2, 'GAME OVER', scoreConfig).setOrigin(0.5)
-            if (game.settings.gamePrevScore >= 0) {
+            if (game.settings.gamePrevScore >= 0 || !game.settings.gameTwoPlayers) {
                 this.add.text(game.config.width/2, game.config.height/2 + 64, 'Press (R) to Restart or ← for Menu', scoreConfig).setOrigin(0.5)
             }
             else {
@@ -119,8 +119,10 @@ class Play extends Phaser.Scene {
                 this.scene.restart()
             }
         }
-        if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT) && game.settings.gamePrevScore < 0) {
-            this.scene.start("menuScene")
+        else if(this.gameOver && Phaser.Input.Keyboard.JustDown(keyLEFT)) {
+            if ((game.settings.gamePrevScore >= 0 || !game.settings.gameTwoPlayers)) {
+                this.scene.start("menuScene")
+            }
         }
 
         this.starfield.tilePositionX -= 4
